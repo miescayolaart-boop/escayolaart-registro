@@ -437,92 +437,87 @@ function showToast(msg, isErr) {
 
 async function submitForm() {
   if (!currentWorker) { showToast('Selecciona tu nombre primero', true); return; }
-  const allItems = [...items.vac.map(i => ({...i, section:'vac'})), ...items.pul.map(i => ({...i, section:'pul'}))];
-  if (!allItems.length) { showToast('Añade al menos una figura', true); return; }
+  if (!items.vac.length && !items.pul.length) { showToast('Añade al menos una figura', true); return; }
 
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.textContent = 'Enviando…';
 
   const now = new Date();
+  const notas = document.getElementById('notes').value;
   const rows = [];
 
   items.vac.forEach(i => {
     if (i.qty > 0 || i.damaged > 0) {
-      rows.push({
-        timestamp: now.toISOString(),
-        worker: currentWorker,
-        turno: currentTurno,
-        figura: i.name,
-        etapa: 'Vaciado → Horno',
-        cantidad: i.qty,
-        danadas: i.damaged,
-        notas: document.getElementById('notes').value
-      });
+      rows.push({ timestamp: now.toISOString(), worker: currentWorker,
+        figura: i.name, etapa: 'Vaciado → Horno',
+        cantidad: i.qty, danadas: i.damaged, notas: notas });
     }
   });
   items.pul.forEach(i => {
     if (i.qty > 0 || i.damaged > 0) {
-      rows.push({
-        timestamp: now.toISOString(),
-        worker: currentWorker,
-        turno: currentTurno,
-        figura: i.name,
-        etapa: 'Pulido → Listas',
-        cantidad: i.qty,
-        danadas: i.damaged,
-        notas: document.getElementById('notes').value
-      });
+      rows.push({ timestamp: now.toISOString(), worker: currentWorker,
+        figura: i.name, etapa: 'Pulido → Listas',
+        cantidad: i.qty, danadas: i.damaged, notas: notas });
     }
   });
 
+  if (!rows.length) { showToast('Escribe al menos una cantidad', true); btn.disabled = false; btn.textContent = 'Enviar registro del día'; return; }
+
+  const sumVac = items.vac.reduce((s, i) => s + i.qty, 0);
+  const sumPul = items.pul.reduce((s, i) => s + i.qty, 0);
+  const sumMer = [...items.vac, ...items.pul].reduce((s, i) => s + i.damaged, 0);
+
+  if (APPS_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') {
+    await new Promise(r => setTimeout(r, 800));
+    console.log('DEMO:', rows);
+    mostrarExito(sumVac, sumPul, sumMer, rows.length);
+    return;
+  }
+
   try {
-    if (APPS_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') {
-      await new Promise(r => setTimeout(r, 1200));
-      console.log('DEMO - filas que se enviarían:', rows);
-    } else {
-      // Apps Script con no-cors no acepta Content-Type: application/json
-      // Se envía como form data para evitar el preflight CORS
-      const formData = new FormData();
-      formData.append('data', JSON.stringify({ rows }));
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: formData
-      });
-    }
+    const uid = Date.now();
+    const iframe = document.createElement('iframe');
+    iframe.name = 'sf' + uid;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
 
-    const sumVac = items.vac.reduce((s, i) => s + i.qty, 0);
-    const sumPul = items.pul.reduce((s, i) => s + i.qty, 0);
-    const sumMer = [...items.vac, ...items.pul].reduce((s, i) => s + i.damaged, 0);
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = APPS_SCRIPT_URL;
+    form.target = 'sf' + uid;
 
-    document.getElementById('success-sub').textContent =
-      `Registro de ${currentWorker}`;
-    document.getElementById('success-stats').innerHTML = `
-      <div class="stat-row">
-        <span style="color:var(--text2)">Figuras vaciadas</span>
-        <span style="color:var(--vac);font-family:'DM Mono',monospace;font-weight:500">${sumVac}</span>
-      </div>
-      <div class="stat-row">
-        <span style="color:var(--text2)">Figuras pulidas</span>
-        <span style="color:var(--pul);font-family:'DM Mono',monospace;font-weight:500">${sumPul}</span>
-      </div>
-      <div class="stat-row">
-        <span style="color:var(--text2)">Merma total</span>
-        <span style="color:var(--err);font-family:'DM Mono',monospace;font-weight:500">${sumMer}</span>
-      </div>
-      <div class="stat-row">
-        <span style="color:var(--text2)">Referencias</span>
-        <span style="font-family:'DM Mono',monospace;font-weight:500">${rows.length}</span>
-      </div>`;
+    const inp = document.createElement('input');
+    inp.type = 'hidden';
+    inp.name = 'data';
+    inp.value = JSON.stringify({ rows });
+    form.appendChild(inp);
+    document.body.appendChild(form);
 
-    document.getElementById('success-screen').classList.add('show');
+    const cleanup = () => {
+      try { document.body.removeChild(form); } catch(e) {}
+      try { document.body.removeChild(iframe); } catch(e) {}
+    };
 
-  } catch(e) {
+    iframe.onload = () => { cleanup(); mostrarExito(sumVac, sumPul, sumMer, rows.length); };
+    setTimeout(() => { cleanup(); mostrarExito(sumVac, sumPul, sumMer, rows.length); }, 6000);
+
+    form.submit();
+  } catch(err) {
     showToast('Error al enviar. Inténtalo de nuevo.', true);
     btn.disabled = false;
     btn.textContent = 'Enviar registro del día';
   }
+}
+
+function mostrarExito(sumVac, sumPul, sumMer, numRefs) {
+  document.getElementById('success-sub').textContent = 'Registro de ' + currentWorker;
+  document.getElementById('success-stats').innerHTML =
+    '<div class="stat-row"><span style="color:var(--text2)">Vaciadas</span><span style="color:var(--vac);font-family:\'DM Mono\',monospace;font-weight:500">' + sumVac + '</span></div>' +
+    '<div class="stat-row"><span style="color:var(--text2)">Pulidas</span><span style="color:var(--pul);font-family:\'DM Mono\',monospace;font-weight:500">' + sumPul + '</span></div>' +
+    '<div class="stat-row"><span style="color:var(--text2)">Merma</span><span style="color:var(--err);font-family:\'DM Mono\',monospace;font-weight:500">' + sumMer + '</span></div>' +
+    '<div class="stat-row"><span style="color:var(--text2)">Referencias</span><span style="font-family:\'DM Mono\',monospace;font-weight:500">' + numRefs + '</span></div>';
+  document.getElementById('success-screen').classList.add('show');
 }
 
 function resetForm() {
