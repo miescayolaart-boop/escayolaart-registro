@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1e2d">
+<title>EscayolaArt — Registro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1e2d;
+  --bg2: #172636;
+  --bg3: #1e3247;
+  --surface: #243b52;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e8f0f7;
+  --text2: #8ca8c0;
+  --text3: #506880;
+  --accent: #e85a2c;
+  --accent2: #ff7a50;
+  --ok: #2dd4a0;
+  --okbg: rgba(45,212,160,0.1);
+  --warn: #f59e0b;
+  --warnbg: rgba(245,158,11,0.1);
+  --err: #f87171;
+  --errbg: rgba(248,113,113,0.12);
+  --vac: #f59e0b;
+  --vacbg: rgba(245,158,11,0.1);
+  --pul: #818cf8;
+  --pulbg: rgba(129,140,248,0.1);
+  --mer: #f87171;
+  --merbg: rgba(248,113,113,0.1);
+  --jackson: #fb923c;
+  --andres: #38bdf8;
+  --yamileth: #c084fc;
+  --r: 12px;
+  --r-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 100px; }
+
+/* ── HEADER ── */
+.header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 16px 20px 14px; position: sticky; top: 0; z-index: 100; }
+.header-top { display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.logo-text { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+.date-badge { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); background: var(--bg3); padding: 4px 10px; border-radius: 20px; }
+
+/* ── WORKER SELECTOR ── */
+.worker-bar { display: flex; gap: 8px; padding: 14px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+.worker-bar::-webkit-scrollbar { display: none; }
+.worker-btn { flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 100px; border: 1.5px solid var(--border2); background: transparent; color: var(--text2); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.worker-btn .avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
+.worker-btn.jackson.active { border-color: var(--jackson); color: var(--jackson); background: rgba(251,146,60,0.1); }
+.worker-btn.andres.active { border-color: var(--andres); color: var(--andres); background: rgba(56,189,248,0.1); }
+.worker-btn.yamileth.active { border-color: var(--yamileth); color: var(--yamileth); background: rgba(192,132,252,0.1); }
+.av-jackson { background: rgba(251,146,60,0.2); color: var(--jackson); }
+.av-andres { background: rgba(56,189,248,0.2); color: var(--andres); }
+.av-yamileth { background: rgba(192,132,252,0.2); color: var(--yamileth); }
+
+/* ── MAIN ── */
+.main { padding: 20px; max-width: 480px; margin: 0 auto; }
+.section { margin-bottom: 24px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.section-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text2); }
+.section-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dot-vac { background: var(--vac); }
+.dot-pul { background: var(--pul); }
+.dot-mer { background: var(--mer); }
+.count-pill { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); background: var(--bg3); padding: 3px 8px; border-radius: 10px; }
+
+
+
+
+/* ── FIGURE CARDS ── */
+.fig-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 8px; transition: border-color 0.2s; }
+.fig-card:hover { border-color: var(--border2); }
+.fig-card-inner { display: grid; grid-template-columns: 1fr 72px 72px 32px; align-items: center; gap: 0; }
+.fig-name-cell { padding: 12px 14px; }
+.fig-name { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.3; }
+.fig-sku { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px; }
+.num-cell { padding: 8px 6px; display: flex; flex-direction: column; align-items: center; gap: 3px; border-left: 1px solid var(--border); }
+.num-label { font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.nl-ok { color: var(--ok); }
+.nl-err { color: var(--err); }
+.num-input { width: 60px; text-align: center; font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; background: var(--bg3); border: 1.5px solid var(--border2); border-radius: var(--r-sm); padding: 6px 4px; color: var(--text); outline: none; -moz-appearance: textfield; }
+.num-input::-webkit-inner-spin-button, .num-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.num-input:focus { border-color: var(--ok); background: var(--okbg); }
+.num-input.has-val { border-color: var(--ok); color: var(--ok); }
+.num-input.has-err { border-color: var(--err); color: var(--err); }
+.remove-btn { width: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text3); border-left: 1px solid var(--border); align-self: stretch; transition: color 0.2s, background 0.2s; }
+.remove-btn:hover { color: var(--err); background: var(--errbg); }
+
+/* ── SEARCH MODAL ── */
+.search-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: flex-end; }
+.search-overlay.open { display: flex; }
+.search-modal { background: var(--bg2); border-radius: 20px 20px 0 0; width: 100%; max-height: 80vh; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom, 0); animation: slideUp 0.25s ease; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.search-handle { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 16px; }
+.search-bar-wrap { padding: 0 16px 12px; }
+.search-bar { width: 100%; background: var(--bg3); border: 1.5px solid var(--border2); border-radius: var(--r-sm); padding: 11px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; }
+.search-bar:focus { border-color: var(--accent2); }
+.search-results { overflow-y: auto; flex: 1; }
+.search-item { padding: 13px 16px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.15s; }
+.search-item:hover, .search-item:active { background: var(--bg3); }
+.search-item-name { font-size: 14px; color: var(--text); }
+.search-item-added { font-size: 11px; color: var(--ok); background: var(--okbg); padding: 2px 8px; border-radius: 10px; }
+.search-empty { padding: 40px 16px; text-align: center; color: var(--text3); font-size: 14px; }
+
+/* ── ADD BUTTON ── */
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px; border-radius: var(--r-sm); border: 1.5px dashed var(--border2); background: transparent; color: var(--text2); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
+.add-btn:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(232,90,44,0.06); }
+.add-icon { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.add-icon::before { content: '+'; font-size: 12px; line-height: 1; }
+
+/* ── NOTES ── */
+.notes-input { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; resize: none; }
+.notes-input::placeholder { color: var(--text3); }
+.notes-input:focus { border-color: var(--border2); }
+
+/* ── SUMMARY BAR ── */
+.summary { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; margin-bottom: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.summary-chip { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.chip-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.chip-label { color: var(--text2); }
+.chip-val { font-family: 'DM Mono', monospace; font-weight: 500; }
+.cv { color: var(--vac); }
+.cp { color: var(--pul); }
+.cm { color: var(--err); }
+
+/* ── SUBMIT ── */
+.submit-btn { width: 100%; padding: 16px; border-radius: var(--r); border: none; background: var(--accent); color: white; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: -0.01em; }
+.submit-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+.submit-btn:active { transform: translateY(0); }
+.submit-btn:disabled { background: var(--surface); color: var(--text3); cursor: not-allowed; transform: none; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ok); color: #0a1a0f; padding: 12px 20px; border-radius: 100px; font-size: 14px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 300; white-space: nowrap; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { background: var(--err); color: #1a0808; }
+
+/* ── ESTADO VACÍO ── */
+.empty-state { text-align: center; padding: 28px 20px; color: var(--text3); font-size: 13px; }
+.empty-icon { font-size: 24px; margin-bottom: 8px; }
+
+/* ── SUCCESS SCREEN ── */
+.success-screen { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 400; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; text-align: center; }
+.success-screen.show { display: flex; }
+.success-icon { width: 72px; height: 72px; border-radius: 50%; background: var(--okbg); border: 2px solid var(--ok); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+.success-icon svg { width: 32px; height: 32px; stroke: var(--ok); }
+.success-title { font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.success-sub { font-size: 15px; color: var(--text2); line-height: 1.5; margin-bottom: 32px; }
+.success-stats { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 20px; width: 100%; max-width: 300px; margin-bottom: 32px; }
+.stat-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+.stat-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+.new-btn { padding: 14px 32px; border-radius: var(--r); border: 1.5px solid var(--border2); background: transparent; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      <span class="logo-text">EscayolaArt</span>
+    </div>
+    <div class="date-badge" id="date-badge">---</div>
+  </div>
+</div>
+
+<div class="worker-bar">
+  <button class="worker-btn jackson" onclick="selectWorker('Jackson León','jackson')">
+    <span class="avatar av-jackson">JL</span>Jackson León
+  </button>
+  <button class="worker-btn andres" onclick="selectWorker('Andrés Felipe','andres')">
+    <span class="avatar av-andres">AF</span>Andrés Felipe
+  </button>
+  <button class="worker-btn yamileth" onclick="selectWorker('Yamileth','yamileth')">
+    <span class="avatar av-yamileth">YA</span>Yamileth
+  </button>
+</div>
+
+<div class="main">
+
+
+
+  <!-- VACIADO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="section-dot dot-vac"></div>
+        Vaciado
+      </div>
+      <span class="count-pill" id="count-vac">0 figuras</span>
+    </div>
+    <div id="list-vac"></div>
+    <button class="add-btn" onclick="openSearch('vac')">
+      <span class="add-icon"></span>
+      Añadir figura vaciada
+    </button>
+  </div>
+
+  <!-- PULIDO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="section-dot dot-pul"></div>
+        Pulido
+      </div>
+      <span class="count-pill" id="count-pul">0 figuras</span>
+    </div>
+    <div id="list-pul"></div>
+    <button class="add-btn" onclick="openSearch('pul')">
+      <span class="add-icon"></span>
+      Añadir figura pulida
+    </button>
+  </div>
+
+  <!-- NOTAS -->
+  <div class="section">
+    <div class="section-title" style="margin-bottom:10px;">Notas</div>
+    <textarea class="notes-input" id="notes" rows="3" placeholder="Molde flojo, figuras especiales, incidencias…"></textarea>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="summary" id="summary">
+    <div class="summary-chip">
+      <div class="chip-dot" style="background:var(--vac)"></div>
+      <span class="chip-label">Vaciadas:</span>
+      <span class="chip-val cv" id="sum-vac">0</span>
+    </div>
+    <div class="summary-chip">
+      <div class="chip-dot" style="background:var(--pul)"></div>
+      <span class="chip-label">Pulidas:</span>
+      <span class="chip-val cp" id="sum-pul">0</span>
+    </div>
+    <div class="summary-chip">
+      <div class="chip-dot" style="background:var(--err)"></div>
+      <span class="chip-label">Merma:</span>
+      <span class="chip-val cm" id="sum-mer">0</span>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submit-btn" onclick="submitForm()">
+    Enviar registro del día
+  </button>
+
+</div>
+
+<!-- SEARCH MODAL -->
+<div class="search-overlay" id="search-overlay" onclick="handleOverlayClick(event)">
+  <div class="search-modal">
+    <div class="search-handle"></div>
+    <div class="search-bar-wrap">
+      <input class="search-bar" id="search-input" placeholder="Busca la figura…" oninput="filterSearch()" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="success-screen">
+  <div class="success-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+  <div class="success-title">Registro guardado</div>
+  <div class="success-sub" id="success-sub">Los datos se han enviado correctamente.</div>
+  <div class="success-stats" id="success-stats"></div>
+  <button class="new-btn" onclick="resetForm()">Nuevo registro</button>
+</div>
+
+<script>
+const FIGURAS = ["Alegría 18 cm", "Angel sin rostro mediano", "Angel sin rostro mini", "Angelita pequeña", "Ansiedad 23 cm", "Aplique Papa Noel", "Aplique bastón navidad", "Aplique bota navidad", "Aplique campana de navidad", "Aplique árbol de navidad", "Astronauta conejo", "Astronauta en la luna 10 cm", "Astronauta grande", "Astronauta mini", "Astronauta porta móvil 14 cm", "Balón real madrid", "Bandeja ovalada mediana", "Bandeja ovalada pequeña", "Bebé dragón lunar", "Belen corazón", "Beso de José", "Bluey", "Bomba Mario bross", "Buda portavela", "Buda sentado pequeño", "Buey", "Bulbasaur", "Bulldog piloto mini", "Busto africana", "Busto batman", "Busto spiderman", "Busto superman", "Búhos X3", "Caballo de pie", "Calavera grande", "Calavera mediana", "Calavera pequeña", "Candelabro corazón", "Candelabro flor de loto 3D", "Candelabro flor de loto plana", "Candelabro luna", "Capibara grande", "Capibara mediano", "Capibara pequeño", "Capitán América", "Cara Rústica", "Cenicero pequeño", "Cruz rostro Jesús", "Cuenco Pulpo", "Cuenco geométrico", "Desdentado", "Divino niño", "Dragoncito", "Elefante matera", "Envidia 18 cm", "Escudo pequeño real madrid", "Escudo real madrid", "Familia katrina", "Fichas ajedrez - reina y rey", "Figura decorativa arcoíris", "Figura decorativa persona pensando", "Figuras yoga", "Furia 17 cm", "Garfield en la bañera", "Garfield sentado", "Gary", "Gato mediano", "Gogeta 33 cm", "Goku 30 cms", "Goku en nube", "Goku niño 30 cm", "Groot con overol escayola 16 cm", "Groot con pollito", "Groot pequeño", "Hello Kitty pequeña sentada", "Hello kitty cono", "Hello kitty mediana", "Hulk", "Jarrón mediano rayado ovalado", "Jarrón mediano rayado redondo", "Jarrón ovalado grande", "Jarrón rayado pequeño", "Jarrón triangular pequeño", "Jirafa chicle", "Kaws", "Krilin", "Kuromi", "Labubu alas", "Labubu disfraz Stitch", "Luigi 33 cm", "Maestro rochi", "Mafalda 23 cm", "Majin boo", "Mandalas", "Manos like", "Manos ok", "Manos peace", "Mario bros 33 cm", "Matera cara chupete", "Matera cara gatita", "Matera cara pensando", "Matera cara silencio", "Matera cara sombrero", "Matera de Panal de abeja con libro", "Menina mediana", "Mickey mouse manos cintura", "Minion grande", "Minnie mouse", "Mula", "Nacimiento pequeño", "Niño Dios pequeño", "Oso lego 30 cms", "Oso mini", "Oso mini corazón", "Oso plano", "Oso porta chuches", "Osos panda sujetalibros", "Oveja acostada", "Oveja parada", "Palabra love", "Palabra love pequeña", "Perro globo", "Perro grande", "Perro grande - Acostado", "Perro grande - Schnauzer", "Perro grande - Shih Tzu", "Perro mediano labrador", "Perro mini bulldog", "Perro mini labrador", "Perro pequeño Cocker Spaniel", "Perro pequeño labrador", "Pikachu 20 cm", "Pikachu matera", "Porta móvil batman", "Porta móvil spiderman", "Portal nacimiento plano", "Portal pesebre plano", "Portavela corazón", "Portavela corazón flor", "Portavela corazón manos", "Recordatorio primera comunión", "Rey mago camello acostado", "Rey mago mano levantada", "Rey mago sentado", "Sagrada familia mediana", "Sagrada familia mediana alas", "Sagrada familia mediana sin rostro", "Sagrada familia pequeña", "Sagrada familia pequeña sin rostro", "Sagrada familia plana sin rostro", "Salamandra bruni", "San José dormido", "San Miguel Arcángel", "Sonic", "Stitch gordo sentado 19 cms", "Stitch niña", "Stitch niño", "Stitch surf", "Taza baby yoda", "Taza gato", "Taza perro bulldog", "Taza perro labrador", "Taza stitch", "Tortuga con hijo", "Tortuga mediana", "Tristeza 17 cm", "Unicornio alas", "Unicornio gatita", "Unicornio pequeño con estrella en una pierna", "Virgen Dulce Espera 23 cms", "Virgen de Guadalupe 23 cms", "Virgen mediana niño", "Virgen milagrosa mediana", "Virgen portarosario", "Virgen recordatorio Del Carmen", "Virgen recordatorio Milagrosa", "Ying & yang", "Zorro con gafas", "Ángel gigante", "Ángel guardián del hogar 35 cm", "Ángel padre nuestro"];
+
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzu5IxApRKeHKp4Ikql2ISfDr9op5a9al8m9UChrGCBDA7EpatlAXs66HEDaCairXyjew/exec';
+
+let currentWorker = null;
+let currentWorkerClass = null;
+const currentTurno = 'Día';
+let currentSection = null;
+
+let items = { vac: [], pul: [] };
+
+function formatDate(d) {
+  return d.toLocaleDateString('es-ES', {weekday:'short', day:'numeric', month:'short'});
+}
+
+document.getElementById('date-badge').textContent = formatDate(new Date());
+
+function selectWorker(name, cls) {
+  currentWorker = name;
+  currentWorkerClass = cls;
+  document.querySelectorAll('.worker-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.worker-btn.${cls}`).classList.add('active');
+}
+
+
+
+function openSearch(section) {
+  currentSection = section;
+  document.getElementById('search-overlay').classList.add('open');
+  document.getElementById('search-input').value = '';
+  renderSearchResults('');
+  setTimeout(() => document.getElementById('search-input').focus(), 100);
+}
+
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('open');
+  currentSection = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('search-overlay')) closeSearch();
+}
+
+function filterSearch() {
+  renderSearchResults(document.getElementById('search-input').value);
+}
+
+function renderSearchResults(q) {
+  const q2 = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const all = items[currentSection] || [];
+  const addedNames = new Set(all.map(i => i.name));
+  const filtered = q2 ? FIGURAS.filter(f => {
+    const fn = f.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    return fn.includes(q2);
+  }) : FIGURAS;
+
+  const el = document.getElementById('search-results');
+  if (!filtered.length) {
+    el.innerHTML = '<div class="search-empty">No se encontró ninguna figura</div>';
+    return;
+  }
+  el.innerHTML = filtered.map(f => {
+    const added = addedNames.has(f);
+    return `<div class="search-item" onclick="addFigura('${f.replace(/'/g,"\\'")}')">
+      <span class="search-item-name">${f}</span>
+      ${added ? '<span class="search-item-added">Ya añadida</span>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function addFigura(name) {
+  if (!items[currentSection].find(i => i.name === name)) {
+    items[currentSection].push({ name, qty: 0, damaged: 0 });
+    renderList(currentSection);
+    updateSummary();
+  }
+  closeSearch();
+}
+
+function removeFigura(section, idx) {
+  items[section].splice(idx, 1);
+  renderList(section);
+  updateSummary();
+}
+
+function renderList(section) {
+  const el = document.getElementById(`list-${section}`);
+  const list = items[section];
+
+  document.getElementById(`count-${section}`).textContent =
+    list.length === 0 ? '0 figuras' : `${list.length} figura${list.length > 1 ? 's' : ''}`;
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">${section === 'vac' ? '○' : '◎'}</div>Sin figuras aún</div>`;
+    return;
+  }
+
+  el.innerHTML = list.map((item, idx) => `
+    <div class="fig-card">
+      <div class="fig-card-inner">
+        <div class="fig-name-cell">
+          <div class="fig-name">${item.name}</div>
+        </div>
+        <div class="num-cell">
+          <span class="num-label nl-ok">Hechas</span>
+          <input class="num-input ${item.qty > 0 ? 'has-val' : ''}" type="number" min="0" value="${item.qty || ''}" placeholder="0"
+            oninput="updateVal('${section}',${idx},'qty',this)"
+            onfocus="this.select()">
+        </div>
+        <div class="num-cell">
+          <span class="num-label nl-err">Dañadas</span>
+          <input class="num-input ${item.damaged > 0 ? 'has-err' : ''}" type="number" min="0" value="${item.damaged || ''}" placeholder="0"
+            oninput="updateVal('${section}',${idx},'damaged',this)"
+            onfocus="this.select()">
+        </div>
+        <div class="remove-btn" onclick="removeFigura('${section}',${idx})" title="Eliminar">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateVal(section, idx, field, input) {
+  const val = parseInt(input.value) || 0;
+  items[section][idx][field] = val;
+  if (field === 'qty') {
+    input.classList.toggle('has-val', val > 0);
+    input.classList.remove('has-err');
+  } else {
+    input.classList.toggle('has-err', val > 0);
+    input.classList.remove('has-val');
+  }
+  updateSummary();
+}
+
+function updateSummary() {
+  const sumVac = items.vac.reduce((s, i) => s + i.qty, 0);
+  const sumPul = items.pul.reduce((s, i) => s + i.qty, 0);
+  const sumMer = [...items.vac, ...items.pul].reduce((s, i) => s + i.damaged, 0);
+  document.getElementById('sum-vac').textContent = sumVac;
+  document.getElementById('sum-pul').textContent = sumPul;
+  document.getElementById('sum-mer').textContent = sumMer;
+}
+
+function showToast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isErr ? ' error' : '');
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function submitForm() {
+  if (!currentWorker) { showToast('Selecciona tu nombre primero', true); return; }
+  const allItems = [...items.vac.map(i => ({...i, section:'vac'})), ...items.pul.map(i => ({...i, section:'pul'}))];
+  if (!allItems.length) { showToast('Añade al menos una figura', true); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+
+  const now = new Date();
+  const rows = [];
+
+  items.vac.forEach(i => {
+    if (i.qty > 0 || i.damaged > 0) {
+      rows.push({
+        timestamp: now.toISOString(),
+        worker: currentWorker,
+        turno: currentTurno,
+        figura: i.name,
+        etapa: 'Vaciado → Horno',
+        cantidad: i.qty,
+        danadas: i.damaged,
+        notas: document.getElementById('notes').value
+      });
+    }
+  });
+  items.pul.forEach(i => {
+    if (i.qty > 0 || i.damaged > 0) {
+      rows.push({
+        timestamp: now.toISOString(),
+        worker: currentWorker,
+        turno: currentTurno,
+        figura: i.name,
+        etapa: 'Pulido → Listas',
+        cantidad: i.qty,
+        danadas: i.damaged,
+        notas: document.getElementById('notes').value
+      });
+    }
+  });
+
+  try {
+    if (APPS_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') {
+      await new Promise(r => setTimeout(r, 1200));
+      console.log('DEMO - filas que se enviarían:', rows);
+    } else {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows })
+      });
+    }
+
+    const sumVac = items.vac.reduce((s, i) => s + i.qty, 0);
+    const sumPul = items.pul.reduce((s, i) => s + i.qty, 0);
+    const sumMer = [...items.vac, ...items.pul].reduce((s, i) => s + i.damaged, 0);
+
+    document.getElementById('success-sub').textContent =
+      `Registro de ${currentWorker}`;
+    document.getElementById('success-stats').innerHTML = `
+      <div class="stat-row">
+        <span style="color:var(--text2)">Figuras vaciadas</span>
+        <span style="color:var(--vac);font-family:'DM Mono',monospace;font-weight:500">${sumVac}</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text2)">Figuras pulidas</span>
+        <span style="color:var(--pul);font-family:'DM Mono',monospace;font-weight:500">${sumPul}</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text2)">Merma total</span>
+        <span style="color:var(--err);font-family:'DM Mono',monospace;font-weight:500">${sumMer}</span>
+      </div>
+      <div class="stat-row">
+        <span style="color:var(--text2)">Referencias</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:500">${rows.length}</span>
+      </div>`;
+
+    document.getElementById('success-screen').classList.add('show');
+
+  } catch(e) {
+    showToast('Error al enviar. Inténtalo de nuevo.', true);
+    btn.disabled = false;
+    btn.textContent = 'Enviar registro del día';
+  }
+}
+
+function resetForm() {
+  items = { vac: [], pul: [] };
+  currentWorker = null;
+  currentWorkerClass = null;
+
+  document.querySelectorAll('.worker-btn').forEach(b => b.classList.remove('active'));
+
+  document.getElementById('notes').value = '';
+  renderList('vac');
+  renderList('pul');
+  updateSummary();
+  document.getElementById('success-screen').classList.remove('show');
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('submit-btn').textContent = 'Enviar registro del día';
+}
+
+renderList('vac');
+renderList('pul');
+updateSummary();
+</script>
+</body>
+</html>
