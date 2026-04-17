@@ -110,6 +110,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .search-item:hover, .search-item:active { background: var(--bg3); }
 .search-item-name { font-size: 14px; color: var(--text); }
 .search-item-added { font-size: 11px; color: var(--ok); background: var(--okbg); padding: 2px 8px; border-radius: 10px; }
+.search-item-stock { font-size: 11px; color: var(--vac); background: var(--vacbg); padding: 2px 8px; border-radius: 10px; font-family: 'DM Mono', monospace; font-weight: 500; }
+.search-item-nostock { font-size: 11px; color: var(--text3); background: var(--bg3); padding: 2px 8px; border-radius: 10px; }
+.search-item.disabled { opacity: 0.45; }
+.search-item.disabled:hover { background: transparent; }
+.stock-hint { font-size: 9px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 2px; }
+.stock-hint.warn { color: var(--err); }
 .search-empty { padding: 40px 16px; text-align: center; color: var(--text3); font-size: 14px; }
 
 /* ── ADD BUTTON ── */
@@ -291,6 +297,33 @@ let currentSection = null;
 
 let items = { vac: [], pul: [] };
 
+let stockFiguras = {};
+let stockLoaded = false;
+
+async function cargarStock() {
+  if (APPS_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') {
+    stockLoaded = true;
+    return;
+  }
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=stock');
+    const data = await res.json();
+    if (data.status === 'ok') {
+      stockFiguras = data.stock || {};
+      stockLoaded = true;
+    }
+  } catch(e) {
+    console.warn('No se pudo cargar el stock:', e);
+    stockLoaded = true;
+  }
+}
+
+function getStockHorneado(figura) {
+  const s = stockFiguras[figura];
+  if (!s) return 0;
+  return Math.max(0, s.horneado || 0);
+}
+
 function formatDate(d) {
   return d.toLocaleDateString('es-ES', {weekday:'short', day:'numeric', month:'short'});
 }
@@ -341,11 +374,42 @@ function renderSearchResults(q) {
     el.innerHTML = '<div class="search-empty">No se encontró ninguna figura</div>';
     return;
   }
+
+  // Si estamos en Pulido, mostramos primero las que tienen stock horneado
+  if (currentSection === 'pul' && stockLoaded) {
+    filtered.sort((a, b) => {
+      const sa = getStockHorneado(a);
+      const sb = getStockHorneado(b);
+      if (sa > 0 && sb === 0) return -1;
+      if (sa === 0 && sb > 0) return 1;
+      return 0;
+    });
+  }
+
   el.innerHTML = filtered.map(f => {
     const added = addedNames.has(f);
-    return `<div class="search-item" onclick="addFigura('${f.replace(/'/g,"\\'")}')">
+    const isPulido = currentSection === 'pul';
+    const stock = isPulido ? getStockHorneado(f) : 0;
+    const sinStock = isPulido && stockLoaded && stock === 0;
+
+    let badge = '';
+    if (added) {
+      badge = '<span class="search-item-added">Ya añadida</span>';
+    } else if (isPulido && stockLoaded) {
+      if (stock === 0) {
+        badge = '<span class="search-item-nostock">Sin stock</span>';
+      } else {
+        badge = '<span class="search-item-stock">' + stock + ' por pulir</span>';
+      }
+    }
+
+    const clickAction = sinStock
+      ? "showToast('No hay figuras por pulir', true); closeSearch();"
+      : `addFigura('${f.replace(/'/g,"\\'")}')`;
+
+    return `<div class="search-item${sinStock ? ' disabled' : ''}" onclick="${clickAction}">
       <span class="search-item-name">${f}</span>
-      ${added ? '<span class="search-item-added">Ya añadida</span>' : ''}
+      ${badge}
     </div>`;
   }).join('');
 }
@@ -377,36 +441,63 @@ function renderList(section) {
     return;
   }
 
-  el.innerHTML = list.map((item, idx) => `
-    <div class="fig-card">
-      <div class="fig-card-inner">
-        <div class="fig-name-cell">
-          <div class="fig-name">${item.name}</div>
-        </div>
-        <div class="num-cell">
-          <span class="num-label nl-ok">Hechas</span>
-          <input class="num-input ${item.qty > 0 ? 'has-val' : ''}" type="number" min="0" value="${item.qty || ''}" placeholder="0"
-            oninput="updateVal('${section}',${idx},'qty',this)"
-            onfocus="this.select()">
-        </div>
-        <div class="num-cell">
-          <span class="num-label nl-err">Dañadas</span>
-          <input class="num-input ${item.damaged > 0 ? 'has-err' : ''}" type="number" min="0" value="${item.damaged || ''}" placeholder="0"
-            oninput="updateVal('${section}',${idx},'damaged',this)"
-            onfocus="this.select()">
-        </div>
-        <div class="remove-btn" onclick="removeFigura('${section}',${idx})" title="Eliminar">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-            <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
-          </svg>
+  el.innerHTML = list.map((item, idx) => {
+    const isPulido = section === 'pul';
+    const stockDisp = isPulido ? getStockHorneado(item.name) : 0;
+    const total = (item.qty || 0) + (item.damaged || 0);
+    const excede = isPulido && stockLoaded && total > stockDisp;
+
+    const stockHint = isPulido && stockLoaded
+      ? `<div class="stock-hint${excede ? ' warn' : ''}">Disponible: ${stockDisp}</div>`
+      : '';
+
+    return `
+      <div class="fig-card">
+        <div class="fig-card-inner">
+          <div class="fig-name-cell">
+            <div class="fig-name">${item.name}</div>
+            ${stockHint}
+          </div>
+          <div class="num-cell">
+            <span class="num-label nl-ok">Hechas</span>
+            <input class="num-input ${item.qty > 0 ? 'has-val' : ''} ${excede ? 'has-err' : ''}" type="number" min="0" ${isPulido && stockLoaded ? `max="${stockDisp}"` : ''} value="${item.qty || ''}" placeholder="0"
+              oninput="updateVal('${section}',${idx},'qty',this)"
+              onfocus="this.select()">
+          </div>
+          <div class="num-cell">
+            <span class="num-label nl-err">Dañadas</span>
+            <input class="num-input ${item.damaged > 0 ? 'has-err' : ''}" type="number" min="0" value="${item.damaged || ''}" placeholder="0"
+              oninput="updateVal('${section}',${idx},'damaged',this)"
+              onfocus="this.select()">
+          </div>
+          <div class="remove-btn" onclick="removeFigura('${section}',${idx})" title="Eliminar">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+            </svg>
+          </div>
         </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function updateVal(section, idx, field, input) {
-  const val = parseInt(input.value) || 0;
+  let val = parseInt(input.value) || 0;
+
+  // En Pulido, validar que cantidad + dañadas no exceda el stock disponible
+  if (section === 'pul' && stockLoaded) {
+    const item = items[section][idx];
+    const stockDisp = getStockHorneado(item.name);
+    const otroField = field === 'qty' ? 'damaged' : 'qty';
+    const otroVal = item[otroField] || 0;
+
+    if (val + otroVal > stockDisp) {
+      val = Math.max(0, stockDisp - otroVal);
+      input.value = val || '';
+      showToast('Máximo ' + stockDisp + ' para esta figura', true);
+    }
+  }
+
   items[section][idx][field] = val;
   if (field === 'qty') {
     input.classList.toggle('has-val', val > 0);
@@ -416,6 +507,9 @@ function updateVal(section, idx, field, input) {
     input.classList.remove('has-val');
   }
   updateSummary();
+
+  // Si es Pulido, re-renderizar para actualizar el mensaje de "disponible"
+  if (section === 'pul') renderList('pul');
 }
 
 function updateSummary() {
@@ -464,6 +558,21 @@ async function submitForm() {
 
   if (!rows.length) { showToast('Escribe al menos una cantidad', true); btn.disabled = false; btn.textContent = 'Enviar registro del día'; return; }
 
+  // Validación final: ninguna figura de Pulido puede exceder el stock disponible
+  if (stockLoaded) {
+    for (const i of items.pul) {
+      const total = (i.qty || 0) + (i.damaged || 0);
+      if (total === 0) continue;
+      const stockDisp = getStockHorneado(i.name);
+      if (total > stockDisp) {
+        showToast('"' + i.name + '" supera el stock (' + stockDisp + ')', true);
+        btn.disabled = false;
+        btn.textContent = 'Enviar registro del día';
+        return;
+      }
+    }
+  }
+
   const sumVac = items.vac.reduce((s, i) => s + i.qty, 0);
   const sumPul = items.pul.reduce((s, i) => s + i.qty, 0);
   const sumMer = [...items.vac, ...items.pul].reduce((s, i) => s + i.damaged, 0);
@@ -511,6 +620,7 @@ async function submitForm() {
 }
 
 function mostrarExito(sumVac, sumPul, sumMer, numRefs) {
+  if (document.getElementById('success-screen').classList.contains('show')) return;
   document.getElementById('success-sub').textContent = 'Registro de ' + currentWorker;
   document.getElementById('success-stats').innerHTML =
     '<div class="stat-row"><span style="color:var(--text2)">Vaciadas</span><span style="color:var(--vac);font-family:\'DM Mono\',monospace;font-weight:500">' + sumVac + '</span></div>' +
@@ -518,6 +628,8 @@ function mostrarExito(sumVac, sumPul, sumMer, numRefs) {
     '<div class="stat-row"><span style="color:var(--text2)">Merma</span><span style="color:var(--err);font-family:\'DM Mono\',monospace;font-weight:500">' + sumMer + '</span></div>' +
     '<div class="stat-row"><span style="color:var(--text2)">Referencias</span><span style="font-family:\'DM Mono\',monospace;font-weight:500">' + numRefs + '</span></div>';
   document.getElementById('success-screen').classList.add('show');
+  // Recargar el stock tras 2s para que el siguiente registro tenga datos frescos
+  setTimeout(cargarStock, 2000);
 }
 
 function resetForm() {
@@ -539,6 +651,9 @@ function resetForm() {
 renderList('vac');
 renderList('pul');
 updateSummary();
+
+// Cargar el stock disponible al abrir la app
+cargarStock();
 </script>
 </body>
 </html>
